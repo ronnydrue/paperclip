@@ -36,4 +36,4 @@ RUN mkdir -p /root/.paperclip /root/.gemini
 EXPOSE 3000
 
 # Startbefehl
-CMD ["npm", "start"]
+CMD ["pnpm", "--filter", "@paperclipai/server", "run", "start"]
