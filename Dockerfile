@@ -13,19 +13,18 @@ RUN apt-get update && apt-get install -y \
     libxrandr2 libgbm1 libasound2 libpango-1.0-0 libcairo2 \
     && rm -rf /var/lib/apt/lists/*
 
-# Installiere pnpm global (WICHTIG für Paperclip)
+# Installiere pnpm global
 RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Paperclip bauen - wir nutzen pnpm statt npm, da das Projekt darauf optimiert ist
-COPY package*.json ./
-# Falls eine pnpm-lock.yaml existiert, kopieren wir die auch
-COPY pnpm-lock.yaml* ./ 
+# ZUERST ALLES KOPIEREN (damit pnpm auch den /patches Ordner findet)
+COPY . .
 
+# Jetzt die Installation (pnpm findet jetzt alle lokalen Dateien)
 RUN pnpm install
 
-COPY . .
+# Build ausführen
 RUN pnpm run build
 
 # Unseren Gemini-Agenten vorbereiten
@@ -36,5 +35,5 @@ RUN mkdir -p /root/.paperclip /root/.gemini
 
 EXPOSE 3000
 
-# Startbefehl (meistens nutzt Paperclip pnpm start oder npm start)
+# Startbefehl
 CMD ["npm", "start"]
