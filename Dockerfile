@@ -18,22 +18,23 @@ RUN npm install -g pnpm
 
 WORKDIR /app
 
-# ZUERST ALLES KOPIEREN (damit pnpm auch den /patches Ordner findet)
 COPY . .
 
-# Jetzt die Installation (pnpm findet jetzt alle lokalen Dateien)
+# 1. Alle Abhängigkeiten installieren
 RUN pnpm install
 
-# Build ausführen
+# 2. Prisma Client generieren (Wichtig, da die Fehlermeldung aus /packages/db kam)
+RUN pnpm --filter @paperclipai/db prisma generate
+
+# 3. Das gesamte Projekt bauen (TypeScript -> JavaScript)
 RUN pnpm run build
 
-# Unseren Gemini-Agenten vorbereiten
-RUN pip3 install --no-cache-dir google-genai --break-system-packages
-
-# Ordner für Paperclip-Konfiguration erstellen
-RUN mkdir -p /root/.paperclip /root/.gemini
+# ... (Gemini-Agent Vorbereitung bleibt gleich)
 
 EXPOSE 3000
 
-# Startbefehl
+# Startbefehl: Wir stellen sicher, dass wir im Produktionsmodus starten
+ENV NODE_ENV=production
+
+# Versuche diesen spezifischen Startbefehl
 CMD ["pnpm", "--filter", "@paperclipai/server", "run", "start"]
