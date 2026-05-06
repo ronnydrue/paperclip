@@ -37,20 +37,18 @@ RUN pip3 install --no-cache-dir google-genai --break-system-packages
 # 10. Konfigurations-Ordner erstellen
 RUN mkdir -p /root/.paperclip /app/storage
 
-# 11. DER LOOPBACK-FIX: Wir erzwingen die Konfiguration als Datei.
-# Das überschreibt die fehlerhafte "local_trusted"-Logik von Paperclip.
-RUN echo '{"auth": {"strategy": "simple"}, "server": {"bind": "0.0.0.0", "port": 3000}}' > /root/.paperclip/config.json
-RUN echo '{"auth": {"strategy": "simple"}, "server": {"bind": "0.0.0.0", "port": 3000}}' > /app/storage/config.json
-
-# 12. Umgebungsvariablen setzen
-ENV NODE_ENV=production
-ENV PAPERCLIP_BIND=0.0.0.0
+# 11. Radikaler Fix: Wir setzen die Variablen so früh wie möglich
 ENV PAPERCLIP_AUTH_STRATEGY=simple
-ENV PAPERCLIP_STORAGE_PATH=/app/storage
+ENV PAPERCLIP_BIND=0.0.0.0
+ENV NODE_ENV=production
 
-# 13. Port 3000 für Coolify freigeben
+# Wir erstellen die Config-Datei an den zwei wahrscheinlichsten Orten
+RUN mkdir -p /root/.paperclip /app/storage && \
+    echo '{"auth": {"strategy": "simple"}, "server": {"bind": "0.0.0.0", "port": 3000}}' > /root/.paperclip/config.json && \
+    echo '{"auth": {"strategy": "simple"}, "server": {"bind": "0.0.0.0", "port": 3000}}' > /app/storage/config.json
+
 EXPOSE 3000
 
-# 14. Startbefehl: Wir nutzen tsx direkt im Server-Verzeichnis
-# Das umgeht Pfadprobleme im Monorepo.
-CMD ["pnpm", "--filter", "@paperclipai/server", "exec", "tsx", "src/index.ts"]
+# 12. Startbefehl mit "Clean Slate"
+# Wir erzwingen die Variablen nochmal direkt im Startbefehl
+CMD ["sh", "-c", "PAPERCLIP_AUTH_STRATEGY=simple PAPERCLIP_BIND=0.0.0.0 pnpm --filter @paperclipai/server exec tsx src/index.ts"]
