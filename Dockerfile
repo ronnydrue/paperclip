@@ -24,7 +24,9 @@ RUN pip3 install --no-cache-dir google-genai --break-system-packages
 # Wir setzen die Umgebung auf Development, damit Paperclip 
 # nicht versucht, die (vielleicht fehlenden) dist-Ordner zu nutzen,
 # sondern direkt die Source-Files nimmt, die wir mit tsx laden.
-ENV NODE_ENV=development
+ENV NODE_ENV=production
+ENV PAPERCLIP_BIND=0.0.0.0
+ENV PAPERCLIP_AUTH_STRATEGY=simple
 
 EXPOSE 3000
 
