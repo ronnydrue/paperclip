@@ -21,12 +21,13 @@ RUN pnpm run build
 # Gemini-Agent Vorbereitung
 RUN pip3 install --no-cache-dir google-genai --break-system-packages
 
-# Umgebungsvariablen setzen
-ENV NODE_ENV=production
-ENV TS_NODE_TRANSPILE_ONLY=true
+# Wir setzen die Umgebung auf Development, damit Paperclip 
+# nicht versucht, die (vielleicht fehlenden) dist-Ordner zu nutzen,
+# sondern direkt die Source-Files nimmt, die wir mit tsx laden.
+ENV NODE_ENV=development
 
 EXPOSE 3000
 
-# DER TRICK: Wir starten den Server mit dem tsx-Loader, 
-# damit er .ts Dateien versteht, falls die Symlinks darauf zeigen.
-CMD ["tsx", "packages/server/src/index.ts"]
+# Wir nutzen pnpm, um den Server-Prozess im richtigen Workspace zu starten,
+# erzwingen aber den tsx-loader für Node.js
+CMD ["pnpm", "--filter", "@paperclipai/server", "exec", "tsx", "src/index.ts"]
