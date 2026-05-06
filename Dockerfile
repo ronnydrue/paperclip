@@ -21,15 +21,13 @@ RUN pnpm run build
 # Gemini-Agent Vorbereitung
 RUN pip3 install --no-cache-dir google-genai --break-system-packages
 
-# Wir setzen die Umgebung auf Development, damit Paperclip 
-# nicht versucht, die (vielleicht fehlenden) dist-Ordner zu nutzen,
-# sondern direkt die Source-Files nimmt, die wir mit tsx laden.
 ENV NODE_ENV=production
+# Diese Variablen hier sind Default-Werte, falls Coolify sie nicht überschreibt
 ENV PAPERCLIP_BIND=0.0.0.0
 ENV PAPERCLIP_AUTH_STRATEGY=simple
 
 EXPOSE 3000
 
-# Wir nutzen pnpm, um den Server-Prozess im richtigen Workspace zu starten,
-# erzwingen aber den tsx-loader für Node.js
-CMD ["pnpm", "--filter", "@paperclipai/server", "exec", "tsx", "src/index.ts"]
+# Wir setzen die Variablen HIER im CMD nochmal explizit davor.
+# Das stellt sicher, dass der Prozess sie absolut sicher im Zugriff hat.
+CMD ["sh", "-c", "PAPERCLIP_BIND=0.0.0.0 PAPERCLIP_AUTH_STRATEGY=simple pnpm --filter @paperclipai/server exec tsx src/index.ts"]
